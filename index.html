@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Sliders</title>
+<style>
+    .slider {
+        width: 300px;
+        height: 20px;
+        position: relative;
+        cursor: pointer;
+        margin-bottom: 20px;
+    }
+    .slider .track {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #00ff40 0%, #f0f0f0 0%, #f0f0f0 0%);
+    }
+    .slider .thumb {
+        width: 20px;
+        height: 20px;
+        background-color: #000000;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+    }
+</style>
+</head>
+<body>
+
+<div class="slider" id="slider1">
+    <div class="track"></div>
+    <div class="thumb"></div>
+</div>
+<div id="value1"></div>
+
+<div class="slider" id="slider2">
+    <div class="track"></div>
+    <div class="thumb"></div>
+</div>
+<div id="value2"></div>
+
+<script>
+    const sliders = document.querySelectorAll('.slider');
+    const thumbs = document.querySelectorAll('.thumb');
+    const tracks = document.querySelectorAll('.track');
+    const values = document.querySelectorAll('[id^="value"]');
+    
+    const minValue = 0;
+    const maxValue = 100;
+    const step = 10; // Шаг движения бегунка
+    
+    sliders.forEach((slider, index) => {
+        const thumb = thumbs[index];
+        const track = tracks[index];
+        const valueDisplay = values[index];
+        
+        let isDragging = false;
+        const isFixedStep = index === 0; // флаг для определения, должен ли быть фиксированный шаг
+        
+        function setPosition(position) {
+            thumb.style.left = position + 'px';
+            const value = Math.round((position / (slider.offsetWidth - thumb.offsetWidth)) * (maxValue - minValue));
+            valueDisplay.textContent = value;
+            track.style.background = `linear-gradient(to right, #00ff40 0%, #00ff40 ${position}px, #f0f0f0 ${position}px, #f0f0f0 100%)`;
+        }
+        
+        function handleMouseDown(event) {
+            isDragging = true;
+            handleMouseMove(event);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+        
+        function handleMouseMove(event) {
+            if (isDragging) {
+                let newPosition = event.clientX - slider.getBoundingClientRect().left - (thumb.offsetWidth / 2);
+                const minPosition = 0;
+                const maxPosition = slider.offsetWidth - thumb.offsetWidth;
+                if (isFixedStep) {
+                    // Ограничиваем движение бегунка на 10% от длины линии слайдера
+                    const stepWidth = (maxPosition - minPosition) * (step / 100);
+                    newPosition = Math.round(newPosition / stepWidth) * stepWidth;
+                }
+                newPosition = Math.max(minPosition, Math.min(newPosition, maxPosition));
+                setPosition(newPosition);
+            }
+        }
+        
+        function handleMouseUp() {
+            isDragging = false;
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+        
+        thumb.addEventListener('mousedown', handleMouseDown);
+    });
+</script>
+
+</body>
+</html>
